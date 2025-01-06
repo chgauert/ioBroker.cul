@@ -64,7 +64,7 @@
                         } else {
                             $('#baudrate').val('38400');
                         }
-                    }
+                    }                  
                     onChange();
                 }).on('keyup', onChange);
             }
@@ -179,7 +179,7 @@
         <div class="row">
             <div class="input-field col s10 m4">
                 <select id="mode" class="value">
-                    <option value="SlowRF">SlowRF - (FS20, HMS, FHT, EM, ESA, ...)</option>
+                    <option value="SlowRF">SlowRF - (FS20, HMS, FHT, EM, ESA, IT, ...)</option>
                     <option value="MORITZ">MORITZ - (MAX! devices)</option>
                     <option value="AskSin">AskSin - (HomeMatic devices)</option>
                 </select>
@@ -188,6 +188,7 @@
             <div class="input-field col s10 m2">
                 <select id="type" class="value">
                     <option value="cul">CUL</option>
+                    <option value="stackedcul">Stacked CUL</option>
                     <option value="coc">COC</option>
                     <option value="scc">SCC</option>
                     <option value="cuno">CUNO</option>
@@ -195,6 +196,32 @@
                 <label  class="translate" for="type">Type</label>
             </div>
         </div>
+
+        <div class="row">
+            <div class="input-field col s10 m4">
+                <input id="sc1Name" class="value" value="868 MHz CUL" type="text" />
+                <label class="translate" for="sc1Name">Name Transmitter 1</label>
+            </div>
+        </div>        
+        <div class="row">
+            <div class="input-field col s10 m4">
+                <input id="sc2Name" class="value" value="433 MHz CUL" type="text" />
+                <label class="translate" for="sc2Name">Name Transmitter 2</label>
+            </div>
+        </div>        
+        <div class="row">
+            <div class="input-field col s10 m4">
+                <input id="sc3Name" class="value" value="" type="text" />
+                <label class="translate" for="sc3Name">Name Transmitter 3</label>
+            </div>
+        </div>        
+        <div class="row">
+            <div class="input-field col s10 m4">
+                <input id="sc4Name" class="value" value="" type="text" />
+                <label class="translate" for="sc4Name">Name Transmitter 4</label>
+            </div>
+        </div>        
+
         <div class="row">
             <div class="input-field col s6 m4">
                 <input id="ip" class="value" value="127.0.0.1" type="text"/>
@@ -211,6 +238,12 @@
                 <span  class="translate" for="experimental">Experimental</span>
             </div>
         </div>
+        <div class="row">
+            <div class="input-field col s10 m4">
+                <input id="autoadd" class="value" type="checkbox"/>
+                <span  class="translate" for="autoadd">Automatically add devices</span>
+            </div>
+        </div>        
     </div>
 </div>
 </body>

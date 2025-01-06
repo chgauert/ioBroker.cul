@@ -17,7 +17,7 @@
       "label": "Baud rate",
       "noTranslation": true,
       "sm": 2,
-      "md": 1,
+      "md": 2,
       "lg": 1,
       "options": [
         {"value": 110, "label":"110"},
@@ -38,13 +38,13 @@
     "mode": {
       "newLine": true,
       "type": "select",
-      "label": "Type",
+      "label": "Mode",
       "noTranslation": true,
       "sm": 10,
       "md": 6,
       "lg": 4,
       "options": [
-        {"value": "SlowRF", "label":"SlowRF - (FS20, HMS, FHT, EM, ESA, ...)"},
+        {"value": "SlowRF", "label":"SlowRF - (FS20, HMS, FHT, EM, ESA, IT, ...)"},
         {"value": "MORITZ", "label":"MORITZ - (MAX! devices)"},
         {"value": "AskSin", "label":"AskSin - (HomeMatic devices)"}
       ]
@@ -52,17 +52,59 @@
     "type": {
       "type": "select",
       "noTranslation": true,
-      "label": "Mode",
+      "label": "Type",
+      "attr":"type",
       "sm": 2,
-      "md": 1,
+      "md": 2,
       "lg": 1,
       "options": [
         {"value": "cul", "label":"CUL"},
+        {"value": "stackedcul", "label":"Stacked CUL"},
         {"value": "coc", "label":"COC"},
         {"value": "scc", "label":"SCC"},
         {"value": "cuno", "label":"CUNO"}
       ]
     },
+    "sc1Name": {
+      "newLine": true,
+      "type": "text",
+      "noTranslation": true,
+      "label": "Name Transmitter 1",
+      "hidden" : "data.type != 'stackedcul'",
+      "sm": 10,
+      "md": 6,
+      "lg": 4
+    },
+    "sc2Name": {
+      "newLine": true,
+      "type": "text",
+      "noTranslation": true,
+      "label": "Name Transmitter 2",
+      "hidden" : "data.type != 'stackedcul'",
+      "sm": 10,
+      "md": 6,
+      "lg": 4
+    }, 
+    "sc3Name": {
+      "newLine": true,
+      "type": "text",
+      "noTranslation": true,
+      "label": "Name Transmitter 3",
+      "hidden" : "data.type != 'stackedcul'",
+      "sm": 10,
+      "md": 6,
+      "lg": 4
+    }, 
+    "sc4Name": {
+      "newLine": true,
+      "type": "text",
+      "noTranslation": true,
+      "label": "Name Transmitter 4",
+      "hidden" : "data.type != 'stackedcul'",
+      "sm": 10,
+      "md": 6,
+      "lg": 4
+    },             
     "ip": {
       "newLine": true,
       "type": "text",
@@ -75,7 +117,7 @@
       "type": "number",
       "label": "Port",
       "sm": 2,
-      "md": 1,
+      "md": 2,
       "lg": 1,
       "min": 1,
       "max": 65535
@@ -85,6 +127,12 @@
       "type": "checkbox",
       "label": "Experimental",
       "sm": 12
-    }
+    },
+    "autoadd": {
+      "newLine": true,
+      "type": "checkbox",
+      "label": "Automatically add devices",
+      "sm": 12
+    }    
   }
 }

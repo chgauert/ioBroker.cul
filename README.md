@@ -25,10 +25,27 @@ ioBroker adapter to control FS20, Max!, HMS and other devices via [CUL](http://b
 ## HowTo
 
 ### Send a command to a FS20 Device in e.g. JavaScript
-```sendTo("cul.0", "send", {"protocol":"FS20", "housecode":"A1B2", "address":"01", "command":"00"});```
+	transmitter	= number of transmitter used to send
+	              1   -> normal/first transmitter of CUL
+				  2-x -> number of stacked transmitter
+```sendTo("cul.0", "send", {"protocol":"FS20", "housecode":"A1B2", "address":"01", "command":"00", "transmitter": 1});```
+
+### Send a command to a InterTechno V3 Device in e.g. JavaScript
+    command     = the command to send, on (1) or off (0)
+				  for IT V1 other values than default (On = FF, Off = F0) can be set here
+	address     = address from IT object (V1: housecode + unitId + const 0F  , V3: unitId + groupBit + channelId)
+	dimLevel    = dimLevel for command if used, 4 digits hex string (0 = 0%, 1111 = 100%)
+	transmitter	= number of transmitter used to send
+	              1   -> normal/first transmitter of CUL
+				  2-x -> number of stacked transmitter
+```sendTo("cul.0", "send", {"protocol":"IT", "address":"0101001010101110100000011000011", "command":"0", "transmitter": 1});```
 
 ### Send a raw command (to a InterTechno device for example) using JavaScript
-```sendTo("cul.0", "sendraw", {"command": 'is0FFFFF0FFFFF'});```
+    command 	= the raw command to send
+	transmitter	= number of transmitter used to send
+	              1   -> normal/first transmitter of CUL
+				  2-x -> number of stacked transmitter
+```sendTo("cul.0", "sendraw", {"command": 'is0FFFFF0FFFFF', "transmitter": 1});```
 
 These commands use the CUL Library of this adapter to send the commands a Device.
 Javascript/Node.js based `Busware CUL USB / culfw` adapter
@@ -39,6 +56,9 @@ Javascript/Node.js based `Busware CUL USB / culfw` adapter
 -->
 
 ## Changelog
+### 2.3.0 (2025-01-06)
+* (chg) Support for stacked CUL's and Intertechno devices
+
 ### 2.2.0 (2023-04-17)
 * (jpk) Select port by ID instead of name as option
 * (bluefox) Updated GUI for admin 6

@@ -1,0 +1,18 @@
+{
+    "Automatically add devices": "Автоматично додавати пристрої",
+    "Baud rate": "Швидкість передачі даних",
+    "CUL adapter settings": "Налаштування примірника CUL",
+    "Experimental": "Експериментальний",
+    "IP/Hostname": "IP/ім’я хоста",
+    "Mode": "Режим",
+    "Name Transmitter 1": "Ім'я передавача 1",
+    "Name Transmitter 2": "Ім'я передавача 2",
+    "Name Transmitter 3": "Ім'я передавача 3",
+    "Name Transmitter 4": "Ім'я передавача 4",
+    "Not available": "Не доступний",
+    "Not ports found": "Порти не знайдено",
+    "Port": "Порт",
+    "Select port": "Виберіть послідовний порт",
+    "Serial port": "Послідовний порт",
+    "Type": "Тип"
+}

@@ -3,7 +3,8 @@
 /* jslint node: true */
 
 'use strict';
-const Main = process.env.DEBUG ? require('./lib/debugCul.js') : require('cul');
+const Main = require('cul');
+//const Main = require('./lib/chgcul.js')
 const adapterName = require('./package.json').name.split('.').pop();
 
 // you have to require the utils module and call adapter function
@@ -23,6 +24,31 @@ try {
     console.warn('Net is not available');
 }
 
+//
+// read state transmitter from parent object
+//   return transmitter from parent object or default value 1
+//
+async function getTransmitterFromObject(id) {
+
+    const oParts = id.split('.');
+    if (oParts.length < 5) {
+        adapter.log.error('Invalid id used');
+        return 1;
+    }
+
+    let cmd = oParts[4];
+
+    let idTransmitter = id.slice(0, id.length-cmd.length) + 'transmitter';
+
+    let result = await adapter.getStateAsync(idTransmitter);
+
+    if(result !== "undefined") {
+        return result.val;
+    } else {
+        return 1;
+    }
+}
+
 let adapter;
 
 function startAdapter(options) {
@@ -30,30 +56,67 @@ function startAdapter(options) {
     Object.assign(options, {name: adapterName});
     adapter = new utils.Adapter(options);
 
-    adapter.on('stateChange', (id, state) => {
+    adapter.on('stateChange', async (id, state) => {
         if (state && !state.ack) {
             adapter.log.debug(`State Change ${JSON.stringify(id)}, State: ${JSON.stringify(state)}`);
-            //  State Change "cul.0.FS20.123401.cmd" State: {"val":2,"ack":false,"ts":1581365531968,"q":0,"from":"system.adapter.admin.0","user":"system.user.admin","lc":1581365531968}
+
             const oAddr = id.split('.');
             if (oAddr.length < 5) {
                 adapter.log.error('Invalid id used');
                 return;
             }
-            // 0: cul; 1:0; 2:FS20; 3:123401; 4:cmd;
-            const sHousecode = oAddr[3].substring(0, 4);
-            const sAddress = oAddr[3].substring(4, 6);
+            // get used transmitter
+            let transmitter = await getTransmitterFromObject(id);
+
             if (oAddr[2] === 'FS20' || adapter.config.experimental === true || adapter.config.experimental === 'true') {
+                // State Change 
+                //   id    = "cul.0.FS20.123401.cmd"     
+                //   state = {"val":2,"ack":false,"ts":1581365531968,"q":0,"from":"system.adapter.admin.0","user":"system.user.admin","lc":1581365531968}
+                //
+                // State change object -> 
+                // 0: cul; 
+                // 1: 0; 
+                // 2: FS20; 
+                // 3: 123401; 
+                // 4: cmd;
+                const sHousecode = oAddr[3].substring(0, 4);
+                const sAddress = oAddr[3].substring(4, 6);
+            
                 switch (oAddr[4]) {
                     case 'cmdRaw':
-                        sendCommand({protocol: oAddr[2], housecode: sHousecode, address: sAddress, command: state.val});
+                        sendCommand({protocol: oAddr[2], housecode: sHousecode, address: sAddress, command: state.val, transmitter: transmitter});
                         break;
 
                     default:
                         adapter.log.error(`Write of State ${oAddr[4]} currently not implemented`);
                         break;
                 }
+            } else if (oAddr[2] === 'IT') {
+                // State change
+                //  id    = "cul.0.IT.1101100000101000000000000000010.command"
+                //  state = 
+                //
+                // State change object -> 
+                // 0: cul
+                // 1: 0 
+                // 2: IT
+                // 3: 1101100000101000000000000000010
+                // 4: command  oder dimLevel
+                const sAddress = oAddr[3];
+            
+                switch (oAddr[4]) {
+                    case 'command':
+                        sendCommand({protocol: oAddr[2], address: sAddress, command: state.val, transmitter: transmitter});
+                        break;
+                    case 'dimLevel':
+                        sendCommand({protocol: oAddr[2], address: sAddress, dimLevel: state.val, transmitter: transmitter});
+                        break;                        
+                    default:
+                        adapter.log.error(`Write of State ${oAddr[4]} currently not implemented`);
+                        break;
+                }
             } else {
-                adapter.log.error('Only FS20 Devices are tested. Please contribute here: https://github.com/ioBroker/ioBroker.cul');
+                adapter.log.error('Only FS20 and IT Devices are tested. Please contribute here: https://github.com/ioBroker/ioBroker.cul');
             }
         }
     });
@@ -160,13 +223,16 @@ function startAdapter(options) {
                         protocol: obj.message.protocol,
                         housecode: obj.message.housecode,
                         address: obj.message.address,
-                        command: obj.message.command
+                        command: obj.message.command,
+                        dimLevel: obj.message.dimLevel,
+                        transmitter: obj.message.transmitter
                     });
                     break;
 
                 case 'sendraw':
                     sendRaw({
-                        command: obj.message.command
+                        command: obj.message.command,
+                        transmitter: obj.message.transmitter
                     });
                     break;
 
@@ -183,16 +249,31 @@ function startAdapter(options) {
 /***
  * Send a command to the cul module
  * @param {obj.message.protocol, obj.message.housecode, obj.message.address, obj.message.command}
+ * @param {obj.message.protocol, obj.message.address, obj.message.command}
  */
 function sendCommand(o) {
+
     adapter.log.info(`Send command received. Housecode: ${o.housecode}; address: ${o.address}; command: ${o.command}`);
-    cul.cmd(o.protocol, o.housecode, o.address, o.command);
+
+    let transmitter = typeof o.transmitter !== "undefined" ? o.transmitter : 1;
+    
+    cul.cmd(o.protocol, 
+            o.housecode, 
+            o.address, 
+            o.command, 
+            o.dimLevel,
+            { "transmitter" : transmitter});
 }
 
 function sendRaw(o) {
-    adapter.log.info('Send RAW command received. ' + o.command);
-	//cul.write('F6C480111'); // Raw command
-    cul.write(o.command);
+
+    adapter.log.info('Send RAW command received. command =' + o.command);
+
+    let transmitter = typeof o.transmitter !== "undefined" ? o.transmitter : 1;
+
+	// 1.Param = command
+    // 2.Param = transmitter number to write to
+    cul.write(o.command, transmitter);
 }
 
 function checkConnection(host, port, timeout, callback) {
@@ -228,7 +309,7 @@ function checkPort(callback) {
             callback && callback(err);
             callback = null;
         });
-    } else {
+    } else {      
         if (!adapter.config.serialport) {
             callback && callback('Port is not selected');
             return;
@@ -307,7 +388,8 @@ function setStates(obj) {
     for (const state in obj.data) {
         if (!obj.data.hasOwnProperty(state)) {
             continue;
-        }
+        }    
+
         const oid  = `${adapter.namespace}.${id}.${state}`;
         const meta = objects[oid];
         let val  = obj.data[state];
@@ -325,6 +407,111 @@ function setStates(obj) {
     isStart && processTasks();
 }
 
+function setTransmitterObjectData(transmitterList) {
+
+    for(let i=0; i < transmitterList.length; i++) {
+
+        let number = transmitterList[i];
+
+        let nameTransmitterObject = "Transmitter" + number;
+        let configObjectName = "sc" + number + "Name";
+
+        let name = adapter.config[configObjectName];
+        if(name && name !== '') {
+            if( number === 1) {
+                adapter.setState(nameTransmitterObject + ".name", name, true);
+                adapter.setState(nameTransmitterObject + ".number", number, true);
+            } else {                
+                createStackedTransmitterObject(nameTransmitterObject);
+
+                adapter.setState(nameTransmitterObject + ".name", name, true);
+                adapter.setState(nameTransmitterObject + ".number", number, true);
+            }
+        }
+
+    }
+}
+
+function createStackedTransmitterObject(TransmitterObjectName) {
+
+    adapter.setObjectNotExists(TransmitterObjectName, {
+        type: "channel",
+        common: { name: "Stacked Transmitter" },
+        native: {},
+    });
+
+    adapter.setObjectNotExists(TransmitterObjectName + ".name", {
+        type: "state",
+        common: {
+            name: "Name",
+            type: "string",
+            role: "text",
+            read: true,
+            write: false,
+        },
+        native: {},
+    });      
+
+    adapter.setObjectNotExists(TransmitterObjectName + ".number", {
+        type: "state",
+        common: {
+            name: "Number of Transmitter",
+            type: "number",
+            role: "value",
+            read: true,
+            write: false,
+        },
+        native: {},
+    });     
+
+    adapter.setObjectNotExists(TransmitterObjectName + ".rawData", {
+        type: "state",
+        common: {
+            name: "raw data",
+            type: "string",
+            role: "state",
+            read: true,
+            write: false,
+        },
+        native: {},
+    });    
+}
+
+function removeAllStackedTransmitters(transmitterList) {
+
+    for(let i=0; i < transmitterList.length; i++) {
+
+        let number = transmitterList[i];
+        if(number > 1) {
+            let nameTransmitterObject = "Transmitter" + number;
+
+            adapter.delObject(nameTransmitterObject, { recursive: true });
+        }
+    }
+}
+
+function createTransmitterList() {
+
+    let result = [];
+    result.push(1);     // 1 Transmitter gibt es immer
+
+    if(adapter.config.type == 'stackedcul') {
+
+        for(let i=1; i <= 4; i++)
+        {
+            let configObjectName = "sc" + i + "Name";
+
+            let name = adapter.config[configObjectName];
+            if(name && name !== '') {
+                if( i > 1) {
+                    result.push(i);
+                }
+            }
+        }   
+    }
+    return result;
+}
+
 function connect(callback) {
     const options = {
         connectionMode: adapter.config.type === 'cuno' ? 'telnet' : 'serial' ,
@@ -339,11 +526,15 @@ function connect(callback) {
         logger:     adapter.log.debug
     };
 
+    options.transmitterList = createTransmitterList();
+
     cul = new Main(options);
 
     cul.on('close', () => {
         adapter.setState('info.connection', false, true);
-        // cul.close();
+        
+        removeAllStackedTransmitters(options.transmitterList);
+
         connectTimeout = setTimeout(() => {
             connectTimeout = null;
             cul = null;
@@ -353,23 +544,55 @@ function connect(callback) {
 
     cul.on('ready', () => {
         adapter.setState('info.connection', true, true);
+
+        setTransmitterObjectData(options.transmitterList);
+
         typeof callback === 'function' && callback();
     });
 
     cul.on('error', err =>
         adapter.log.error('Error on Cul connection: ' +  err));
-
-    cul.on('data', (raw, obj) => {
+   
+    cul.on('data', async (raw, obj) => {
         adapter.log.debug(`RAW: ${raw}, ${JSON.stringify(obj)}`);
-        adapter.setState('info.rawData', raw, true);
+        
+        let Number = ((raw, obj) => {
+
+            let index = 1;
+
+            if(!obj || !obj.data || !obj.data.transmitter) {
+                
+                for(let i = 0; i < raw.length; i++) {
+                    if(raw[i] === '*') {
+                        index++;
+                    }
+                    else
+                        return index;
+                }
+                return index;
+            }
+            else {
+                return obj.data.transmitter;
+            }
+        })(raw, obj);
+
+        let usedTransmitter = 'Transmitter' + Number;
+
+        adapter.setState(usedTransmitter + '.rawData', raw, true);
 
         if (!obj || !obj.protocol || (!obj.address && obj.address !== 0)) {
             return;
         }
+
         const id = obj.protocol + '.' + obj.address;
 
+        let oDevice = await adapter.getObjectAsync(adapter.namespace + '.' + id);
+        if(oDevice === null && (adapter.config.autoadd === false || adapter.config.autoadd === 'false')) {
+            return;
+        }
+
         const isStart = !tasks.length;
-        if (!objects[adapter.namespace + '.' + id]) {
+        if (oDevice === null) {  // (!objects[adapter.namespace + '.' + id]) {
 
             const newObjects = [];
             const tmp = JSON.parse(JSON.stringify(obj));
@@ -404,17 +627,16 @@ function connect(callback) {
                     native: {}
                 };
 
-                objects[`${adapter.namespace}.${id}.${_state}`] = newState;
+                //objects[`${adapter.namespace}.${id}.${_state}`] = newState;
                 tasks.push({type: 'object', id: newState._id, obj: newState});
             }
-            objects[adapter.namespace + '.' + id] = newDevice;
+            //objects[adapter.namespace + '.' + id] = newDevice;
             tasks.push({type: 'object', id: newDevice._id, obj: newDevice});
         }
-
         setStates(obj);
         isStart && processTasks();
     });
-
+    
 }
 
 function main() {
@@ -433,6 +655,7 @@ function main() {
                 for (let i = 0, l = res.rows.length; i < l; i++) {
                     objects[res.rows[i].id] = res.rows[i].value;
                 }
+
                 connect(() => adapter.subscribeStates('*'));
             });
         });
@@ -446,3 +669,4 @@ if (module && module.parent) {
     // or start the instance directly
     startAdapter();
 }
+//# sourceMappingURL=main.js.map

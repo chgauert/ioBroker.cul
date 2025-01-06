@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "cul",
-    "version": "2.2.0",
+    "version": "2.3.0",
     "news": {
+      "2.3.0": {
+        "en": "Added configuration for stacked CUL's, IT protocol extended",
+        "de": "Konfiguration für Stacked CUL's ergänzt, IT Protokoll erweitret",
+        "ru": "Added configuration for stacked CUL's, IT protocol extended",
+        "pt": "Added configuration for stacked CUL's, IT protocol extended",
+        "nl": "Added configuration for stacked CUL's, IT protocol extended",
+        "fr": "Added configuration for stacked CUL's, IT protocol extended",
+        "it": "Added configuration for stacked CUL's, IT protocol extended",
+        "es": "Added configuration for stacked CUL's, IT protocol extended",
+        "pl": "Added configuration for stacked CUL's, IT protocol extended",
+        "uk": "Added configuration for stacked CUL's, IT protocol extended",
+        "zh-cn": "Added configuration for stacked CUL's, IT protocol extended"
+      },      
       "2.2.0": {
         "en": "Select port by ID instead of name as option\nUpdated GUI for admin 6",
         "de": "Wählen Sie Port per ID anstelle des Namens als Option\nAktualisierte GUI für admin 6",
@@ -165,6 +178,8 @@
     "baudrate": 9600,
     "mode": "SlowRF",
     "type": "cul",
+    "sc1Name": "868 Mhz CUL",
+    "sc2Name": "433 Mhz CUL",
     "ip": "127.0.0.1",
     "port": "23"
   },
@@ -195,6 +210,12 @@
           "write": false,
           "role": "state"
         },
+        "command": {
+          "type": "string",
+          "read": true,
+          "write": false,
+          "role": "state"
+        },        
         "bidirectional": {
           "type": "boolean",
           "read": true,
@@ -240,6 +261,12 @@
           "write": false,
           "role": "indicator"
         },
+        "transmitter": {
+          "type": "number",
+          "read": true,
+          "write": false,
+          "role": "value"
+        },        
         "undefined": {
           "type": "string",
           "read": true,
@@ -272,7 +299,39 @@
       "native": {}
     },
     {
-      "_id": "info.rawData",
+      "_id": "Transmitter1",
+      "type": "channel",
+      "common": {
+        "name": "Transmitter 1"
+      },
+      "native": {}
+    },    
+    {
+      "_id": "Transmitter1.name",
+      "type": "state",
+      "common": {
+        "role": "text",
+        "name": "name of transmitter",
+        "type": "string",
+        "read": true,
+        "write": false
+      },
+      "native": {}
+    },
+    {
+      "_id": "Transmitter1.number",
+      "type": "state",
+      "common": {
+        "role": "value",
+        "name": "number of transmitter",
+        "type": "number",
+        "read": true,
+        "write": false
+      },
+      "native": {}
+    },    
+    {
+      "_id": "Transmitter1.rawData",
       "type": "state",
       "common": {
         "role": "state",

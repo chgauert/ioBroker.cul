@@ -144,7 +144,7 @@
             <td class="translate">Mode</td>
             <td>
                 <select id="mode" class="value">
-                    <option value="SlowRF">SlowRF - (FS20, HMS, FHT, EM, ESA, ...)</option>
+                    <option value="SlowRF">SlowRF - (FS20, HMS, FHT, EM, ESA, IT, ...)</option>
                     <option value="MORITZ">MORITZ - (MAX! devices)</option>
                     <option value="AskSin">AskSin - (HomeMatic devices)</option>
                 </select>
@@ -154,10 +154,28 @@
             <td><label for="type" class="translate">Type:</label></td>
             <td><select id="type" class="value">
                 <option value="cul">CUL</option>
+                <option value="stackedcul">Stacked CUL</option>
                 <option value="coc">COC</option>
                 <option value="scc">SCC</option>
                 <option value="cuno">CUNO</option>
             </select></td>
+        </tr>
+
+        <tr>
+            <td><label for="sc1Name" class="translate">Name Transmitter 1:</label></td>
+            <td><input id="sc1Name" class="value" value="868 MHz CUL"/></td>
+        </tr>
+        <tr>
+            <td><label for="sc2Name" class="translate">Name Transmitter 2:</label></td>
+            <td><input id="sc2Name" class="value" value="433 MHz CUL"/></td>
+        </tr>
+        <tr>
+            <td><label for="sc3Name" class="translate">Name Transmitter 3:</label></td>
+            <td><input id="sc3Name" class="value" value=""/></td>
+        </tr>
+        <tr>
+            <td><label for="sc4Name" class="translate">Name Transmitter 4:</label></td>
+            <td><input id="sc4Name" class="value" value=""/></td>
         </tr>
 
         <tr>
@@ -172,6 +190,10 @@
             <td><label for="experimental" class="translate">Experimental:</label></td>
             <td><input id="experimental" class="value" type="checkbox" value="true" /></td>
         </tr>
+        <tr>
+            <td><label for="autoadd" class="translate">Automatically add devices:</label></td>
+            <td><input id="autoadd" class="value" type="checkbox" value="true" /></td>
+        </tr>        
     </table>
 
 </div>
